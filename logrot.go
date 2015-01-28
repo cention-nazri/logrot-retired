@@ -35,7 +35,6 @@ func rotateOn(name string, sig os.Signal) *LogRot {
 		signal:  sig,
 		logFile: mustOpenFileForAppend(name),
 	}
-	log.Println("Logging to", name)
 	log.SetOutput(rl.logFile)
 
 	sigs := make(chan os.Signal, 1)
