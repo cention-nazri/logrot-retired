@@ -19,7 +19,7 @@ func mustOpenFileForAppend(name string) *os.File {
 // LogRot represents log file that will be reopened on a given signal.
 type LogRot struct {
 	name    string
-	logFile *os.File
+	LogFile *os.File
 	signal  os.Signal
 }
 
@@ -33,9 +33,9 @@ func rotateOn(name string, sig os.Signal) *LogRot {
 	rl := &LogRot{
 		name:    name,
 		signal:  sig,
-		logFile: mustOpenFileForAppend(name),
+		LogFile: mustOpenFileForAppend(name),
 	}
-	log.SetOutput(rl.logFile)
+	log.SetOutput(rl.LogFile)
 
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, sig)
@@ -44,9 +44,9 @@ func rotateOn(name string, sig os.Signal) *LogRot {
 			switch s {
 			case rl.signal:
 				log.Printf("%s received - rotating log file handle on %s\n", s, rl.name)
-				oldLog := rl.logFile
-				rl.logFile = mustOpenFileForAppend(rl.name)
-				log.SetOutput(rl.logFile)
+				oldLog := rl.LogFile
+				rl.LogFile = mustOpenFileForAppend(rl.name)
+				log.SetOutput(rl.LogFile)
 				oldLog.Close()
 			}
 		}
@@ -55,7 +55,7 @@ func rotateOn(name string, sig os.Signal) *LogRot {
 }
 
 func (rl *LogRot) Close() {
-	if rl != nil && rl.logFile != nil {
-		rl.logFile.Close()
+	if rl != nil && rl.LogFile != nil {
+		rl.LogFile.Close()
 	}
 }
