@@ -1,4 +1,4 @@
-// Package logrot handles log rotation on SIGUSR1.
+// Package logrot handles log rotation on SIGHUP.
 package logrot
 
 import (
@@ -23,9 +23,9 @@ type LogRot struct {
 	signal  os.Signal
 }
 
-// WriteTo sets the log output to the given file and reopen the file on SIGUSR1.
+// WriteTo sets the log output to the given file and reopen the file on SIGHUP.
 func WriteTo(name string) *LogRot {
-	return rotateOn(name, syscall.SIGUSR1)
+	return rotateOn(name, syscall.SIGHUP)
 }
 
 // rotateOn rotates the log file on the given signals
