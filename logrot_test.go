@@ -79,27 +79,52 @@ func TestRotate(t *testing.T) {
 	stderr := os.Stderr
 	defer remove(t, "log.txt", "log.txt.old")
 
-	rl := WriteTo("log.txt")
+	Log := log.New(os.Stdout, "LOG ", 0)
+	rl := WriteAllTo("log.txt", Log)
 	defer rl.Close()
+
 	log.Println("some log")
+	Log.Println("foo")
+	fmt.Printf("From stdout\n")
+	fmt.Fprintf(os.Stderr, "From stderr\n")
+
 	err := os.Rename("log.txt", "log.txt.old")
 	if err != nil {
 		os.Stdout = stdout
 		os.Stderr = stderr
 		t.Fatalf("TestRotate(): %v\n", err)
 	}
+
 	log.Println("new filename")
+	Log.Println("bar")
+	fmt.Printf("From stdout 2\n")
+	fmt.Fprintf(os.Stderr, "From stderr 2\n")
 
 	got := readFile(t, "log.txt.old")
-	want := "some log\nnew filename\n"
+	want := `some log
+LOG foo
+From stdout
+From stderr
+new filename
+LOG bar
+From stdout 2
+From stderr 2
+`
 
 	if got != want {
 		t.Errorf("log file renamed failed\nwant: '%s'\n got: '%v'", want, got)
 	}
 
 	rl.rotate()
-	want = "This is after rotation\n"
-	log.Printf(want)
+	want = `This is after rotation
+LOG Yeah after rotation
+From stdout after rotation
+From stderr after rotation
+`
+	log.Printf("This is after rotation")
+	Log.Printf("Yeah after rotation")
+	fmt.Printf("From stdout after rotation\n")
+	fmt.Fprintf(os.Stderr, "From stderr after rotation\n")
 
 	os.Stdout = stdout
 	os.Stderr = stderr
