@@ -6,7 +6,13 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
+)
+
+var (
+	files = map[string]*os.File{}
+	filem sync.Mutex
 )
 
 type Logger interface {
@@ -16,7 +22,28 @@ type Logger interface {
 func mustOpenFileForAppend(name string) *os.File {
 	f, err := os.OpenFile(name, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
-		log.Fatal("Error: ", err)
+		log.Fatalf("error: ", err)
+	}
+	// Remember the latest *os.File for the given name
+	filem.Lock()
+	files[name] = f
+	filem.Unlock()
+	return f
+}
+
+// File opens the named file for append. If the file was already opened
+// indirectly via a previous call to WriteTo or WriteAllTo it returns the same
+// *os.File. The use case is for allowing arbitrary logger to redirect their
+// output to the same file that was scheduled for rotation via an earlier call
+// to WriteTo and WriteAllTo. The destination output of the file returned by
+// Open will not be rotate-ware if it was was called before WriteTo or
+// WriteAllTo is called.
+func Open(name string) *os.File {
+	filem.Lock()
+	f := files[name]
+	filem.Unlock()
+	if f == nil {
+		f = mustOpenFileForAppend(name)
 	}
 	return f
 }
