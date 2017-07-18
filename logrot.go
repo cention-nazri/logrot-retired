@@ -124,6 +124,11 @@ func (rl *LogRot) Close() {
 	}
 }
 
+// Path returns the path to the log file.
+func (rl *LogRot) Path() string {
+	return rl.name
+}
+
 func (rl *LogRot) rotate() {
 	oldLog := rl.logFile
 	rl.logFile = mustOpenFileForAppend(rl.name)
